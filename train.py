@@ -62,7 +62,7 @@ class CustomRacecarWrapper(gym.Wrapper):
 
 if __name__ == "__main__":
     # Initialize the wrapped environment
-    env = gym.make('SingleAgentAustria-v0', render_mode=None)
+    env = gym.make(id='SingleAgentAustria-v0', render_mode=None, scenario= 'track.yml')
     env = CustomRacecarWrapper(env)
 
     # Initialize PPO model with a Multi-Layer Perceptron (MlpPolicy)

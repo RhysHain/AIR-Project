@@ -4,7 +4,7 @@ from racecar_gym.racecar_gym.envs import gym_api
 
 env = gymnasium.make(
     id='MultiAgentRaceEnv-v0',
-    scenario='test.yml',
+    scenario='track.yml',
     render_mode='human'
 )
 

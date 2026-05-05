@@ -7,7 +7,7 @@ from stable_baselines3 import PPO
 from train import CustomRacecarWrapper 
 
 # 2. Re-create the environment with rendering enabled
-env = gym.make('SingleAgentAustria-v0', render_mode='human')
+env = gym.make(id='SingleAgentAustria-v0', render_mode='human', scenario= 'track.yml')
 
 # 3. Apply the exact same wrapper so the observation shape matches what PPO expects
 env = CustomRacecarWrapper(env)
