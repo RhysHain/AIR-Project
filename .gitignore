@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Large file containing all the image_data for training
+detection_model/signs_data
