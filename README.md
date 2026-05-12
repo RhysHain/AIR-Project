@@ -23,3 +23,18 @@ Optional (for yolo training)
 
 ### Execution
 Refer to [single_test.py](./detection_model/single_test.py) for basic usage of trained model
+
+## PPO
+Use [test.py](./test.py) to run the trained PPO driving model with rendering and debug output.
+
+The current PPO setup also uses a modified steering setting in Racecar Gym:
+
+`racecar_gym/models/vehicles/racecar/racecar.yml`
+
+In that file, the steering actuator should have:
+
+```yml
+steering_multiplier: 1.0
+```
+
+This increases the usable steering range for tight hairpin turns. If the car is not turning sharply enough, check that this value has not been reset to `0.5`.
