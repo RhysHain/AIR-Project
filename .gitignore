@@ -157,6 +157,10 @@ ENV/
 env.bak/
 venv.bak/
 
+py3.11
+
+3.10venv
+
 # Spyder project settings
 .spyderproject
 .spyproject
