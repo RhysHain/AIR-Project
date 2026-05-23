@@ -1,5 +1,36 @@
 # AIR-Project
 
+## Group Information
+**Group Number:** 5
+
+**Huu Thanh Jack Nguyen** - *YOLO training & Environment Design*
+- Designed custom sign models (STOP, SLOW, GO) in Blender
+- Created labeled dataset from custom models
+- Trained YOLOv8 detection model
+- Added sign models into simulation environment
+
+**Mateusz Kopaczynski** - *ROLE/CONTRIBUTION*
+
+**Alexander Seretis** - *ROLE/CONTRIBUTION*
+
+**Rhys Hain** - *ROLE/CONTRIBUTION*
+
+## Project Overview
+This project implements a car (agent) in a simulated race track (Racecar Gym) that combines computer vision and reinforcement learning for autonomous driving around the track
+
+### Key Features
+- **Sign Detection**: YOLOv8 model trained on a labelled dataset to detect custom signs (STOP, SLOW, GO) in real time
+- **Autonomous Navigation**: PPO agent learns to stay on the track boundaries (walls) and avoid collisions
+
+### System Components
+1. **YOLO Detection**
+  - Custom trained YOLOv8 on ~600 labelled sign images capturing 'STOP, 'SLOW', 'GO' signs from multiple angles and distances
+  - Real time sign detection from vehicle camera feed
+  - **Decision Making - Signs**: Agent will adjust behaviour based on detected signs:
+      - **STOP sign**: Make a complete stop
+      - **SLOW sign**: Reduce speed
+      - **GO sign**: Increase speed or maintain high speed
+
 ## Environment Setup
 To install the environment, run the following
 
@@ -12,17 +43,20 @@ make sure you clone the repositroy into the root folder of the code
 ## CNN - YOLO (Windows)
 ### Setup
 1. Install python 3.10 (required for compatibility with racecar_gym dependencies)
-2.  Create venv in the root directory using python 3.10 `py -3.10 -m venv venv`
-3. Activate venv
+2. Create venv in the root directory using python 3.10 `py -3.10 -m venv venv`
+3. Activate venv `venv\Scripts\activate`
 4. Install ultralytics `pip install ultralytics`
 5. Downgrade numpy due to compatibility issues with racecar_gym: `pip install numpy==1.22.3`
 
 Optional (for yolo training)
-5. Remove current torch version `pip uninstall torch torchvision -y`
-6. Reinstall torch with CUDA (NVIDIA GPU) support `pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126 `
+
+6. Remove current torch version `pip uninstall torch torchvision -y`
+7. Reinstall torch with CUDA (NVIDIA GPU) support `pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126 `
 
 ### Execution
 Refer to [single_test.py](./detection_model/single_test.py) for basic usage of trained model
+
+Trained model location: : `detection_model/runs/detect/signs_v1-7/weights/best.pt`
 
 ## PPO
 Use [test.py](./test.py) to run the trained PPO driving model with rendering and debug output.
