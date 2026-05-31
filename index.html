@@ -345,6 +345,48 @@
       </p>
     </div>
 
+    <h3 class="title is-4">Sign Detection</h3>
+    <div class="content has-text-justified">
+      <p>
+        The sign detection system is built on YOLOv8 (You Only Look Once, version 8) a CNN architecture used for 
+        object detection. This was selected due to its ability to detect in real time which is necessary for sign 
+        detections during car motion, its balance in detection accuracy and inference speed suits the need to react 
+        to identified signs. This was trained to detect the three sign types STOP, SLOW, GO from the race car’s 
+        camera feed.
+      </p>
+      <p>
+        We selected the nano variant, which as this was the fastest variant which aligns most with its purpose. 
+        However, among the models it has the lowest accuracy, but given the simple task and controlled environment, 
+        this was an acceptable trade-off.
+      </p>
+      <p>
+        Transfer learning was then applied with the custom dataset, allowing the model to reuse learnt features 
+        from the COCO dataset and transfer this knowledge to serve the scenario set out.
+      </p>
+      <p>
+        The model was trained with the following parameters:
+        <ul>
+          <li>Base model: YOLOv8n</li>
+          <li>Epochs: 40</li>
+          <li>Image size: 640x640 pixels</li>
+          <li>Batch size: 4</li>
+          <li>Training Device: GPU</li>
+          <li>Confidence threshold: 0.5</li>
+        </ul>
+        From numerous runs, consistent desirable results and minimal improvements occurred around 35 epochs. 
+        The batch size of 4 was selected due to GPU constraints, with larger values exceeding computer specifications.
+      </p>
+    <h3 class="title is-5">Training Results</h3>
+    <div class="content has-text-justified">
+      <p>
+        The model was trained and subsequently validated using Ultralytics’ built-in validation functions and metrics. 
+        This includes mAP50 (Mean Average Precision at Intersection Over Union threshold 0.5), which measures how well 
+        the model detects objects by counting success when the bounding box overlaps at least 50% of the ground truth.
+        The saved graphs showing training loss curves demonstrated convergence with both training and validation 
+        losses decreasing before flattening, indicating the model has learned generalised features without overfitting. 
+        The validation metrics improved as training occurred and similarly flattened.
+
+      </p>
     <!-- Paper video. -->
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
