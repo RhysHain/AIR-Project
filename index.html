@@ -321,28 +321,28 @@
         python scripting. The script will capture an image each step of the animation 
         of the camera following the arc, where each arc was separated into 50 steps 
         resulting in 200 images per sign. The script will then save the image with the 
-        following format [frame number] _[sign].png (e.g. 0001_Go.png). 
+        following format [frame]_[sign].png (e.g. 0001_Go.png). 
       </p>
       <p>
         Labels were generated concurrently with the images. So, with each image capture,
         the script will also create a label following the format on Ultralytics website 
         which specifies sign ID and bounding box coordinates (x, y, width, height) 
-        relative to image dimensions. Thus, the script extracted the 3D corners of the 
-        sign model in world coordinates and transformed them into 2D image coordinates 
+        relative to image dimensions. Thus, the script extracts the 3D corners of the 
+        sign model in world coordinates and transforms them into 2D image coordinates 
         using in-built functions on Blender.
       </p>
       <div class="content has-text-justified">
   <p>
     In summary, for each frame captured: it will identify the sign in the scene, 
     extract 3D bounding box vertices, project these onto the 2D image plane using 
-    the camera view parameters, compute the minimal axis aligned bounding box enclosing 
-    the project points and normalise the coordinates to the range for YOLO.
-    In addition, images of blank backgrounds of sign colours (100 images) was used
-    to ensure yolo was not just identifying the colour as the determinant for sign ids.
-    Resulting dataset:
+    the camera view parameters, compute the bounding box and normalise the 
+    coordinates to the range for YOLO. In addition, images of blank backgrounds of sign 
+    colours (100 images) was used to ensure yolo was not just identifying the colour as 
+    the determinant for sign ids. The respective labels for this were empty files.
   </p>
     <div class="columns">
       <div class="column">
+        Resulting dataset:
         <ul>
           <li>700 total images
             <ul>
@@ -373,7 +373,7 @@
       is to provide the model with a range of perspectives of the sign to make it more 
       robust. Given the scenario of a race track, signs can appear at different locations 
       and can be viewed from different orientations, such as straight on or from an 
-      oblique angle. As such, simulating these conditions during training will allow 
+      angle. As such, simulating these conditions during training will allow 
       the camera to consistently detect the signs even in motion and during tight turns.
     </p>
   </div>
@@ -408,18 +408,43 @@
         </ul>
         From numerous runs, consistent desirable results and minimal improvements occurred around 35 epochs. 
         The batch size of 4 was selected due to GPU constraints, with larger values exceeding computer specifications.
+        The graphs below shows that the training loss curves converge with both training and validation 
+        losses decreasing before flattening, indicating the model is able to reliably identify signs on unseen data
       </p>
+      <div class="has-text-centered">
+        <img src="./static/images/results.png" alt="Training results" style="max-width: 100%;"/>
+        <p style="font-style: italic;">Training and validation loss curves alongside precision and recall metrics across epochs</p>
+      </div>
     <h3 class="title is-5">Training Results</h3>
-    <div class="content has-text-justified">
+      <div class="content has-text-justified">
+        <p>
+          The model was trained and subsequently validated using Ultralytics’ built-in validation functions and metrics. 
+          This includes mAP50 (Mean Average Precision at Intersection Over Union threshold 0.5), which measures how well 
+          the model detects objects by counting success when the bounding box overlaps at least 50% of the ground truth.
+          Across all three classes, the model achieved a mAP50 of 0.955, precision of 0.997 and recall of 1, demonstrating
+          ability to detect all avaiable signs in scene and no misclassifications between sign types.
+          
+
+        </p>
+        <div class="has-text-centered">
+        <img src="./static/images/mAP50.jpg" alt="mAP50 results" style="max-width: 100%;"/>
+        <p style="font-style: italic;">Validation metrics showing mAP50 of 0.995, precision of 0.997 and recall of 1.0 across all classes</p>
+      </div>
       <p>
-        The model was trained and subsequently validated using Ultralytics’ built-in validation functions and metrics. 
-        This includes mAP50 (Mean Average Precision at Intersection Over Union threshold 0.5), which measures how well 
-        the model detects objects by counting success when the bounding box overlaps at least 50% of the ground truth.
-        The saved graphs showing training loss curves demonstrated convergence with both training and validation 
-        losses decreasing before flattening, indicating the model has learned generalised features without overfitting. 
-        The validation metrics improved as training occurred and similarly flattened.
 
       </p>
+      <div class="columns">
+        <div class="column has-text-centered">
+          <img src="./static/images/PRCurve.jpg" alt="Precision-Recall curve" style="max-width: 100%;"/>
+          <p style="font-style: italic;">Precision-Recall curve</p>
+        </div>
+        <div class="column has-text-centered">
+          <img src="./static/images/confusionMatrix.jpg" alt="Confusion matrix" style="max-width: 100%;"/>
+          <p style="font-style: italic;">Confusion matrix (showing zero misclassifications across all sign classes)</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Paper video. -->
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
