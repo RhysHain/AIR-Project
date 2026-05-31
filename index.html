@@ -253,10 +253,10 @@
             bends/curves, accelerate on straight sections and finally stop at the end of the lap respectively.
           </p>
           <p>
-            The system achieves this by seperating perception and control as two differnt agents. The perception agent
+            The system achieves this by separating perception and control as two different agents. The perception agent
             is built on YOLOv8 and trained on a custom dataset of ~700 images to identify the sign type,and determine
             their position within the environment from the car's camera. The driving agent utilises PPO reinforcement learning,
-            which takes lidar, pose, and velocity as inputs and outputs steering angle and target speed through a custome 
+            which takes lidar, pose, and velocity as inputs and outputs steering angle and target speed through a custom 
             wrapper that converts PPO actions into Racecar Gym controls.
           </p>
           <p>
@@ -309,11 +309,11 @@
         using in-built functions on Blender.
       </p>
       <p>
-        In summary, for each frame captured, it will identify the sign in the scene, 
-        extract 3d bounding box vertices, project these onto the 2D image plane using 
+        In summary, for each frame captured: it will identify the sign in the scene, 
+        extract 3D bounding box vertices, project these onto the 2D image plane using 
         the camera view parameters, compute the minimal axis aligned bounding box enclosing 
         the project points and normalise the coordinates to the range for YOLO
-        In addition, images of blank backgrounds and sign colours were place (100 images) 
+        In addition, images of blank backgrounds of sign colours (100 images) was used
         to ensure yolo was not just identifying the colour as the determinant for sign ids.
         Resulting dataset:
         <ul>
@@ -333,7 +333,7 @@
           <li>50 images per arc</li>
           <li>Data split 90% training and 10% validation</li>
         </ul>
-        The sign were distributed evenly to reduce the possibility of class imbalance
+        The signs were distributed evenly to reduce the possibility of class imbalance
         during training. This means that the model can detect signs without a bias
         towards one class.
         The purpose of the arcs with different distances and heights, is to provide the 
@@ -355,7 +355,7 @@
         camera feed.
       </p>
       <p>
-        We selected the nano variant, which as this was the fastest variant which aligns most with its purpose. 
+        We selected the nano variant, as this was the fastest variant, which aligns most with our purpose. 
         However, among the models it has the lowest accuracy, but given the simple task and controlled environment, 
         this was an acceptable trade-off.
       </p>
