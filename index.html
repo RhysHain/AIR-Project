@@ -342,6 +342,16 @@
         <img src="./static/images/signs.jpg" alt="Dataset summary" style="max-width: 350px;"/>
       </div>
     </div>
+    <p>
+      The signs were distributed evenly to reduce the possibility of class imbalance
+      during training. This means that the model can detect signs without a bias
+      towards one class. The purpose of the arcs with different distances and heights 
+      is to provide the model with a range of perspectives of the sign to make it more 
+      robust. Given the scenario of a race track, signs can appear at different locations 
+      and can be viewed from different orientations, such as straight on or from an 
+      oblique angle. As such, simulating these conditions during training will allow 
+      the camera to consistently detect the signs even in motion and during tight turns.
+    </p>
   </div>
 
     <h3 class="title is-4">Sign Detection</h3>
