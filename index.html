@@ -308,14 +308,18 @@
         sign model in world coordinates and transformed them into 2D image coordinates 
         using in-built functions on Blender.
       </p>
-      <p>
-        In summary, for each frame captured: it will identify the sign in the scene, 
-        extract 3D bounding box vertices, project these onto the 2D image plane using 
-        the camera view parameters, compute the minimal axis aligned bounding box enclosing 
-        the project points and normalise the coordinates to the range for YOLO
-        In addition, images of blank backgrounds of sign colours (100 images) was used
-        to ensure yolo was not just identifying the colour as the determinant for sign ids.
-        Resulting dataset:
+      <div class="content has-text-justified">
+  <p>
+    In summary, for each frame captured: it will identify the sign in the scene, 
+    extract 3D bounding box vertices, project these onto the 2D image plane using 
+    the camera view parameters, compute the minimal axis aligned bounding box enclosing 
+    the project points and normalise the coordinates to the range for YOLO.
+    In addition, images of blank backgrounds of sign colours (100 images) was used
+    to ensure yolo was not just identifying the colour as the determinant for sign ids.
+    Resulting dataset:
+  </p>
+    <div class="columns">
+      <div class="column">
         <ul>
           <li>700 total images
             <ul>
@@ -333,17 +337,12 @@
           <li>50 images per arc</li>
           <li>Data split 90% training and 10% validation</li>
         </ul>
-        The signs were distributed evenly to reduce the possibility of class imbalance
-        during training. This means that the model can detect signs without a bias
-        towards one class.
-        The purpose of the arcs with different distances and heights, is to provide the 
-        model with a range of perspectives of the sign to make it more robust. Given 
-        the scenario of a race track, signs can appear at different locations and 
-        can be viewed from different orientations, such as straight on or from an 
-        oblique angle. As such simulating these conditions during training will allow 
-        the camera to consistently detect the signs even in motion and during tight turns.
-      </p>
+      </div>
+      <div class="column is-narrow">
+        <img src="./static/images/signs.jpg" alt="Dataset summary" style="max-width: 350px;"/>
+      </div>
     </div>
+  </div>
 
     <h3 class="title is-4">Sign Detection</h3>
     <div class="content has-text-justified">
