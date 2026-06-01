@@ -13,7 +13,10 @@
 
 **Alexander Seretis** - *ROLE/CONTRIBUTION*
 
-**Rhys Hain** - *ROLE/CONTRIBUTION*
+**Rhys Hain** - *Simulation, Documentation and Organisation*
+- Set up and tested simulation environment
+- Created and managed GitHub repository, as well as code set up
+- Managed portfolio, video and presentation development
 
 ## Project Overview
 This project implements a car (agent) in a simulated race track (Racecar Gym) that combines computer vision and reinforcement learning for autonomous driving around the track
