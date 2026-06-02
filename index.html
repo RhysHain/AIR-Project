@@ -136,8 +136,6 @@
 
 <section class="section">
   <div class="container is-max-desktop">
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
         <h2 class="title is-3">Environment and Setup</h2>
         <div class="content has-text-justified">
           <p>
@@ -148,14 +146,47 @@
               environment by <a href="https://github.com/axelbr">axelbr</a> was chosen.
           </p>
         </div>
-            <div class="image-column">
-                <figure class="section-figure">
-                    <img src=",/static/images/racecar_gym.gif" alt="4 cars in the racecar_gym environment" loading="lazy">
-                    <figcaption>A sample of the racecar_gym environment</figcaption>
-                </figure>
-            </div>
-      </div>
-    </div>
+        <!-- <div class="columns">
+          <div class="column has-text-centered">
+            <img src="./static/images/racecar_gym.gif" alt="Image 1" style="max-width: 250px;"/>
+            <p style="font-style: italic;">A sample of the racecar_gym environment</p>
+          </div>
+        </div> -->
+        <div class="image-column">
+            <figure class="section-figure">
+                <img src="./static/images/racecar_gym.gif" loading="lazy">
+                <figcaption>A sample of the racecar_gym environment</figcaption>
+            </figure>
+        </div>
+        <div class="content has-text-justified">
+          <p>While several other similar environments exist, racecar_gym has some key advantages: </p>
+          <ul class="section-list">
+              <li><strong>Built in RL Capacity:</strong> Due to the use of Pybullet and PyTorch, this environment can easily use existing reinforcement learning libraries such as StableBaseline</li>
+              <li><strong>Great Observation Options:</strong> Pose, velocity, a lidar scan and an RGB camera is provided for each car as an easily accessible observation. This allows for a very simple 
+              observation function to be developed with minimal issues. There is also no need to add in a custom lidar or camera as per the requirements of the project</li>
+              <li><strong>Variety of States for Rewards:</strong> The environemnt has 12 vahicle stgates that can be used for a reward function, including important values such as lap progress, a wall 
+              collision check, and a wrong way detection</li>
+              <li><strong>Capacity for Multiple Cars:</strong> Multiple cars can be put into the environment at the same time (up to 4), and there is the optioon to track the rank of the car as well</li>
+              <li><strong>Multiple Track Options:</strong> There are multiple prebuilt track options to choose from, and they can be reasonably easily modified in modelling software, allowing for the addition 
+              of custom signs</li>
+          </ul>
+          <p>
+            For these above reasons, the racecar_gym environment was selected.
+          </p>
+        </div>
+        <h3 class="title is-3">The Track</h3>
+        <div class="content has-text-justified">
+          <p>
+            From the available tracks, the Austria track was chosen. It is based on the Austria track developed for <a href="https://github.com/f1tenth">F1Tenth</a>. The several sharp turns and significant
+            lentgh makes it ideal for testing our model and ensuring there is significant difficulty in this project
+          </p>
+        </div>
+        <div class="image-column">
+          <figure class="section-figure">
+              <img src="./static/images/austria.png" loading="lazy">
+              <figcaption>The outline of the Austria track being used</figcaption>
+          </figure>
+        </div>
   </div>
 </section>
 
