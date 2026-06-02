@@ -196,12 +196,12 @@
     <div class="content has-text-justified">
       <p>
         To train a robust object detection model for autonomous navigation within 
-        the simulated environment, we created a custom dataset consisting of the 
+        the simulated environment, a custom dataset was created consisting of the 
         three sign classes: ‘STOP’, ‘SLOW’, and ‘GO’. With a total of approximately
         600 sign images, and additional 100 random background images and respective
         labels, the dataset was created with the intention to ensure the YOLO model 
         could reliably detect signs regardless of the vehicle’s position and movement. 
-        This reflects the scenario of a race car navigating around a racetrack, where 
+        This reflects the scenario of a racecar navigating around a racetrack, where 
         paths, speeds and signs all vary from run to run.
       </p>
     </div>
@@ -227,7 +227,7 @@
         signs before placing them on a plane in Blender, a 3D modelling and animation 
         software, and extruding. This was placed in an empty environment to mirror the
         track environment, which consists of plain walls.  To capture the different 
-        perspectives during car motion, we designed 4 camera arc paths for the 
+        perspectives during car motion, 4 camera arc paths were designed for the 
         camera to follow. These were positioned at different heights and distances 
         from the signs, simulating various angles and ranges that the camera may 
         capture during motion.
@@ -242,28 +242,27 @@
         
       </p>
       <p>
-        To capture each image and generate their respective label we utilised Blender’s 
-        python scripting. The script will capture an image each step of the animation 
-        of the camera following the arc, where each arc was separated into 50 steps 
+        To capture each image and generate their respective label, Blender’s 
+        python scripting was utilised. The script will capture an image each step of the arc 
+        animation from the cameras perspective, where each arc was separated into 50 steps 
         resulting in 200 images per sign. The script will then save the image with the 
         following format [frame]_[sign].png (e.g. 0001_Go.png). 
       </p>
       <p>
         Labels were generated concurrently with the images. So, with each image capture,
         the script will also create a label following the format on Ultralytics website 
-        which specifies sign ID and bounding box coordinates (x, y, width, height) 
-        relative to image dimensions. Thus, the script extracts the 3D corners of the 
-        sign model in world coordinates and transforms them into 2D image coordinates 
-        using in-built functions on Blender.
+        which specifies sign ID and bounding box coordinates (x, y, width, height). 
+        To do so the script extracts the 3D corners of the sign model in world coordinates 
+        and transforms them into 2D image coordinates using in-built functions on Blender.
       </p>
       <div class="content has-text-justified">
   <p>
     In summary, for each frame captured: it will identify the sign in the scene, 
-    extract 3D bounding box vertices, project these onto the 2D image plane using 
-    the camera view parameters, compute the bounding box and normalise the 
-    coordinates to the range for YOLO. In addition, images of blank backgrounds of sign 
+    extract 3D bounding box corners, project these onto the 2D image plane using 
+    the camera view parameters, compute the bounding box and normalise the image pixel
+    coordinates required for YOLO's label format. In addition, images of blank backgrounds of sign 
     colours (100 images) was used to ensure yolo was not just identifying the colour as 
-    the determinant for sign ids. The respective labels for this were empty files.
+    the determinant for sign ids. The respective labels for these were empty files.
   </p>
     <div class="columns">
       <div class="column">
@@ -313,13 +312,13 @@
         camera feed.
       </p>
       <p>
-        We selected the nano variant, as this was the fastest variant, which aligns most with our purpose. 
+        The nano variant was selected as this was the fastest variant, which aligns most with our purpose. 
         However, among the models it has the lowest accuracy, but given the simple task and controlled environment, 
         this was an acceptable trade-off.
       </p>
       <p>
         Transfer learning was then applied with the custom dataset, allowing the model to reuse learnt features 
-        from the COCO dataset and transfer this knowledge to serve the scenario set out.
+        from the COCO dataset and transfer this knowledge to serve the sign detection purpose.
       </p>
       <p>
         The model was trained with the following parameters:
@@ -330,11 +329,17 @@
           <li>Batch size: 4</li>
           <li>Training Device: GPU</li>
           <li>Confidence threshold: 0.5</li>
+          <li>Patience = 5</li>
         </ul>
-        From numerous runs, consistent desirable results and minimal improvements occurred around 35 epochs. 
+        From numerous runs, consistent desirable results and minimal improvements occurred around 35 epochs.
+        This was determined by using parameter 'patience' which monitors the validation metrics and if there is 
+        no meaningful improvement it will stop the training early.
         The batch size of 4 was selected due to GPU constraints, with larger values exceeding computer specifications.
-        The graphs below shows that the training loss curves converge with both training and validation 
-        losses decreasing before flattening, indicating the model is able to reliably identify signs on unseen data
+        The graphs below show the training and validation loss across the epochs before patience activated and finished
+        training. At this point classification loss decreased and flattened, indicating the model can effectively identify
+        sign types. However, box loss was continuing to decrease before being stopped by 'patience'. But at this point it had 
+        been determined that further training yielded minimal improvements and that the model would be able to reliably
+        identify signs on unseen data by tracking the training and validation losses.
       </p>
       <div class="has-text-centered">
         <img src="./static/images/results.png" alt="Training results" style="max-width: 100%;"/>
