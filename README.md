@@ -34,7 +34,8 @@ This project implements a car (agent) in a simulated race track (Racecar Gym) th
       - **SLOW sign**: Reduce speed
       - **GO sign**: Increase speed or maintain high speed
 
-## Environment Setup
+## System Setup
+### Environment Setup
 To install the environment, run the following
 
 `git clone https://github.com/axelbr/racecar_gym.git`
@@ -43,8 +44,7 @@ To install the environment, run the following
 
 make sure you clone the repositroy into the root folder of the code
 
-## CNN - YOLO (Windows)
-### Setup
+### CNN - YOLO (Windows) Setup
 1. Install python 3.10 (required for compatibility with racecar_gym dependencies)
 2. Create venv in the root directory using python 3.10 `py -3.10 -m venv venv`
 3. Activate venv `venv\Scripts\activate`
@@ -61,7 +61,7 @@ Refer to [single_test.py](./detection_model/single_test.py) for basic usage of t
 
 Trained model location: : `detection_model/runs/detect/signs_v1-7/weights/best.pt`
 
-## PPO
+### PPO
 Use [test.py](./test.py) to run the trained PPO driving model with rendering and debug output.
 
 The current PPO setup also uses a modified steering setting in Racecar Gym:
