@@ -369,8 +369,98 @@
         </div>
       </div>
     </div>
+    </div>
+  </div>
+</section>
 
-<section>
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">PPO Driving Agent</h2>
+    <div class="content has-text-justified">
+      <p>
+        The driving agent was trained using Proximal Policy Optimisation (PPO) from Stable-Baselines3. PPO was selected
+        because it is well suited to continuous control tasks, where the policy must repeatedly choose smooth steering
+        and speed commands while reacting to changing track conditions. In this project, PPO controls the car in the
+        Austria Racecar Gym environment while the YOLO model provides the perception layer for interpreting track signs.
+      </p>
+      <p>
+        A custom Gymnasium wrapper was developed to convert Racecar Gym into a PPO-friendly training problem. The wrapper
+        turns the simulator's structured observations into a single numerical observation vector made from LiDAR readings,
+        pose, velocity and two derived track features: turn urgency and left-right track asymmetry. The PPO action space
+        is reduced to two continuous values: target speed and steering. These are then converted back into Racecar Gym's
+        actuator commands for speed, motor and steering.
+      </p>
+      <p>
+        The reward function was shaped around the behaviours required for autonomous racing. The agent is rewarded for
+        forward lap progress, maintaining clearance from walls, choosing steering that aligns with detected turns and
+        keeping smooth actions between steps. It is penalised for stopping unnecessarily, driving too close to walls,
+        steering too aggressively at high speed, travelling the wrong way and crashing. Additional speed limits from
+        LiDAR and hand-coded racing-line guidance were used around tight Austria hairpins so the model could learn to
+        brake before sharp turns rather than only reacting when a wall was directly in front of the car.
+      </p>
+    </div>
+    <div class="has-text-centered">
+      <figure class="section-figure">
+        <img src="./static/images/PPOpano.png" alt="PPO racecar point-of-view panorama" style="width: 100%; max-height: 360px; object-fit: cover; border-radius: 6px;"/>
+        <figcaption>Racecar navigating a corner on the Austria track</figcaption>
+      </figure>
+    </div>
+
+    <h3 class="title is-4">Training Setup</h3>
+    <div class="content has-text-justified">
+      <ul class="section-list">
+        <li><strong>Algorithm:</strong> Stable-Baselines3 PPO with an MLP policy</li>
+        <li><strong>Environment:</strong> SingleAgentAustria-v0 using the custom <code>track.yml</code> scenario</li>
+        <li><strong>Observation:</strong> 1080 LiDAR values plus pose, velocity and derived turn features</li>
+        <li><strong>Action:</strong> Two continuous controls for speed and steering, mapped into Racecar Gym actuators</li>
+        <li><strong>Training length:</strong> 200,000 timesteps for the initial training run, followed by additional training sessions with saved checkpoints and TensorBoard logs, totalling in excess of 500,000 timesteps</li>
+        <li><strong>Key PPO parameters:</strong> learning rate 5e-4, 4096 rollout steps, batch size 512, 15 epochs, gamma 0.99 and clip range 0.2</li>
+      </ul>
+      <p>
+        The final model was saved as a trained PPO policy and evaluated with a separate test script that renders the
+        simulation, reports lap progress and prints reward/debug information. The Racecar Gym steering multiplier was
+        also increased to improve steering authority through the tight turns on the Austria circuit.
+      </p>
+    </div>
+
+    <h3 class="title is-4">Results and Iteration</h3>
+    <div class="columns is-vcentered">
+      <div class="column">
+        <div class="content has-text-justified">
+          <p>
+            Initial PPO training produced a policy that could drive along straight sections of the track, but it crashed on
+            tight hairpin turns. To diagnose this, debug logs were added for LiDAR sectors, turn urgency, raw versus applied
+            actions, target speed and actual joint steering angle. These logs showed that the car was not slowing enough
+            before corners and that the original steering range was too limited for the Austria track.
+          </p>
+          <figure class="section-figure has-text-centered">
+            <img src="./static/images/PPOdebug.png" alt="PPO debug output during evaluation" style="max-width: 100%;"/>
+            <figcaption>PPO evaluation debug output showing lap progress, reward and driving state information</figcaption>
+          </figure>
+          <p>
+            After tuning the speed limits, reward function and steering multiplier, reward and episode length improved during
+            training. The current PPO-only policy can consistently complete a lap, with the simulation ending once the lap is
+            finished. The TensorBoard results show increasing reward and episode length during training, with reward settling
+            at approximately 600.
+          </p>
+        </div>
+      </div>
+      <div class="column is-one-third has-text-centered">
+        <video autoplay muted loop playsinline style="max-width: 100%; max-height: 520px; border-radius: 6px;">
+          <source src="./static/videos/PPO_pov.mp4" type="video/mp4">
+        </video>
+        <p style="font-style: italic;">PPO point-of-view lap completion from the car camera</p>
+      </div>
+    </div>
+
+    <div class="has-text-centered">
+      <figure class="section-figure">
+        <img src="./static/images/PPOtensorBoard.png" alt="PPO TensorBoard training metrics" style="max-width: 100%;"/>
+        <figcaption>TensorBoard logs showing reward and episode length increasing during PPO training</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
 
 <footer class="footer">
   <div class="container">
