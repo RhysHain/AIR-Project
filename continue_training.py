@@ -3,8 +3,8 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
 from train import CustomRacecarWrapper
 
-BASE_MODEL_PATH = "./models/ppo_racecar_model"
-SAVE_MODEL_PATH = "./models/ppo_racecar_model"
+BASE_MODEL_PATH = "./models/ppo_racecar_model_detection2further"
+SAVE_MODEL_PATH = "./models/ppo_racecar_model_detection3"
 
 # Load existing environment
 env = gym.make(
@@ -32,7 +32,7 @@ print("Current timesteps trained: (check tensorboard for exact count)")
 
 # Continue training with the original exploration level.
 model.learn(
-    total_timesteps=100_000,
+    total_timesteps=1000000,
     tb_log_name="PPO_continue"
 )
 

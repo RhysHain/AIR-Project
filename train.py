@@ -1,12 +1,14 @@
 import gymnasium as gym
 import numpy as np
+import pybullet
+import cv2
 
 # This import registers the racecar_gym environments
-from racecar_gym.racecar_gym.envs import gym_api
+from racecar_gym.envs import gym_api
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
-
+from ultralytics import YOLO
 
 OBS_LIDAR_RANGE = 10.0
 SENSOR_LIDAR_RANGE = 15.0
@@ -19,13 +21,23 @@ LIDAR_FORWARD = np.pi / 2.0
 
 
 class CustomRacecarWrapper(gym.Wrapper):
-    def __init__(self, env):
+    def __init__(self, env, yolo_model_path="detection_model/runs/detect/signs_v1-7/weights/best.pt"):
         super().__init__(env)
 
+        # Load YOLO model for sign detection
+        try:
+            self.yolo_model = YOLO(yolo_model_path)
+            print(f"YOLO model loaded from {yolo_model_path}")
+        except Exception as e:
+            print(f"Warning: Could not load YOLO model: {e}. Running without detection.")
+            self.yolo_model = None
+
+        # Expanded observation space:
+        # LiDAR (1080) + Pose (6) + Velocity (6) + Turn features (2) + Detection (8) = 1102
         self.observation_space = gym.spaces.Box(
             low=-10.0,
             high=10.0,
-            shape=(1094,),
+            shape=(1102,),
             dtype=np.float32
         )
 
@@ -57,6 +69,7 @@ class CustomRacecarWrapper(gym.Wrapper):
         self.last_line_speed_limit_mps = MAX_TARGET_SPEED_MPS
         self.last_line_phase = "none"
         self.last_applied_action = np.zeros(2, dtype=np.float32)
+        self.last_detection = np.zeros(8, dtype=np.float32)
 
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
@@ -66,6 +79,19 @@ class CustomRacecarWrapper(gym.Wrapper):
         self.last_progress = self.previous_progress
         self.previous_steering = 0.0
         self.crash_counter = 0
+
+        # Extract camera image and run YOLO detection for initial observation
+        camera_image = None
+        if isinstance(obs, dict):
+            for key in ["rgb_camera_front", "rgb_camera", "camera_image", "image"]:
+                if key in obs:
+                    camera_image = obs[key]
+                    break
+        
+        if camera_image is not None:
+            self.last_detection = self._get_detection_features(camera_image)
+        else:
+            self.last_detection = np.zeros(8, dtype=np.float32)
 
         processed_obs = self._process_observation(obs)
         self.last_turn_urgency = float(processed_obs[-2])
@@ -108,6 +134,18 @@ class CustomRacecarWrapper(gym.Wrapper):
         }
 
         obs, base_reward, terminated, truncated, info = self.env.step(env_action)
+
+        # Extract camera image and run YOLO detection
+        camera_image = None
+        if isinstance(obs, dict):
+            # Try common camera observation keys
+            for key in ["hd_camera", "rgb_camera_front", "rgb_camera", "camera_image", "image"]:
+                if key in obs:
+                    camera_image = obs[key]
+                    break
+        
+        if camera_image is not None:
+            self.last_detection = self._get_detection_features(camera_image)
 
         action_used = np.array([speed_command, steering], dtype=np.float32)
         crashed = self._detect_crash(obs, info)
@@ -265,8 +303,77 @@ class CustomRacecarWrapper(gym.Wrapper):
 
         turn_urgency, asymmetry, _ = self._track_features(lidar, normalized=True)
         turn_features = np.array([turn_urgency, asymmetry], dtype=np.float32)
+        
+        # Use cached detection features from previous step
+        detection_features = self.last_detection.copy()
 
-        return np.concatenate([lidar, pose, velocity, turn_features]).astype(np.float32)
+        return np.concatenate([lidar, pose, velocity, turn_features, detection_features]).astype(np.float32)
+
+    def _get_detection_features(self, image):
+        """
+        Get YOLO detections and format as feature vector.
+        Returns: [stop_prob, slow_prob, go_prob, confidence, bbox_center_x, bbox_center_y, bbox_width, bbox_height]
+        All values normalized to [-1, 1] range.
+        """
+        if self.yolo_model is None or image is None:
+            return np.zeros(8, dtype=np.float32)
+        
+        try:
+            # Run YOLO inference
+            results = self.yolo_model.predict(image, conf=0.4, verbose=False)
+
+                    # Display detections
+            annotated_frame = results[0].plot()
+
+            annotated_frame = cv2.cvtColor(annotated_frame, cv2.COLOR_RGB2BGR)
+            cv2.imshow("YOLO Detections", annotated_frame)
+            cv2.waitKey(1)
+            
+            # Initialize with "no detection" (GO signal by default)
+            detection = np.array([0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=np.float32)
+            
+            if results and len(results[0].boxes) > 0:
+                # Get largest bounding box (closest sign)
+                boxes = results[0].boxes
+                best_idx = int(np.argmax(boxes.conf.cpu().numpy()))  # confidence-based 
+                
+                # Get largest bounding box instead
+                # boxes_data = boxes.xyxy.cpu().numpy()
+                # areas = (boxes_data[:, 2] - boxes_data[:, 0]) * (boxes_data[:, 3] - boxes_data[:, 1])
+                # best_idx = int(np.argmax(areas))
+                box = boxes[best_idx]
+                
+                cls_id = int(box.cls[0])  # 0=STOP, 1=SLOW, 2=GO
+                conf = float(box.conf[0])
+                
+                # Normalize bounding box to [-1, 1] range
+                h, w = image.shape[0], image.shape[1]
+                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                
+                bbox_center_x = ((x1 + x2) / 2.0 - w / 2.0) / (w / 2.0)  # normalize to [-1, 1]
+                bbox_center_y = ((y1 + y2) / 2.0 - h / 2.0) / (h / 2.0)  # normalize to [-1, 1]
+                bbox_w = (x2 - x1) / w  # normalize to [0, 1]
+                bbox_h = (y2 - y1) / h  # normalize to [0, 1]
+                
+                # One-hot encode sign type
+                probs = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+                probs[cls_id] = conf
+                
+                detection = np.array([
+                    probs[0],           # STOP probability (0-1)
+                    probs[1],           # SLOW probability (0-1)
+                    probs[2],           # GO probability (0-1)
+                    conf,               # confidence (0-1)
+                    np.clip(bbox_center_x, -1.0, 1.0),  # x position (-1 to 1)
+                    np.clip(bbox_center_y, -1.0, 1.0),  # y position (-1 to 1)
+                    bbox_w,             # width (0-1)
+                    bbox_h              # height (0-1)
+                ], dtype=np.float32)
+        except Exception as e:
+            print(f"Warning: YOLO inference failed: {e}")
+            detection = np.zeros(8, dtype=np.float32)
+        
+        return detection
 
     def _detect_crash(self, obs, info):
         if isinstance(info, dict):
@@ -455,6 +562,27 @@ class CustomRacecarWrapper(gym.Wrapper):
         if abs(steering) > 0.6 and target_speed_mps > 1.0:
             reward -= 0.25 * target_speed_mps * abs(steering)
 
+        # Sign compliance rewards
+        stop_prob = self.last_detection[0]
+        slow_prob = self.last_detection[1]
+        go_prob = self.last_detection[2]
+
+        if stop_prob > 0.7:  # STOP sign detected
+            if target_speed_mps < 0.1:
+                reward += 20.0  # reward near-stop
+            else:
+                reward -= 200.0  # penalize speeding past STOP
+        elif slow_prob > 0.4:  # SLOW sign detected
+            if target_speed_mps < 1.5:
+                reward += 0.5  # reward obeying SLOW
+            else:
+                reward -= 1.0  # penalize ignoring SLOW
+        elif go_prob > 0.6:  # GO sign detected
+            if target_speed_mps > 1.5:
+                reward += 0.3  # reward maintaining speed on GO
+            else:
+                reward -= 0.5  # penalize going too slow on GO
+
         if isinstance(info, dict) and "progress" in info:
             progress_delta = progress - self.previous_progress
             if progress_delta < -0.5:
@@ -483,6 +611,190 @@ if __name__ == "__main__":
         scenario="track.yml"
     )
 
+    env.reset()
+
+    signs_config = [
+        {
+            'name': 'stop_sign_1',
+            'obj': 'env_signs/stop.obj',
+            'texture': 'racecar_gym/models/signs/stop.png',
+            'position': [0, -0.3, 0.75],           # x, y, z coordinates
+            'rotation': [0, 1.57, 1.57],           # roll (red), pitch (green), yaw (blue)
+            'scale': [0.5, 0.5, 0.5],              # x, y, z scale (0.5 = half size)
+            'collision_size': [0.25, 0.05, 0.3]    # width/2, depth/2, height/2
+        },
+        
+        {
+            'name': 'go_sign_1',
+            'obj': 'env_signs/go.obj',
+            'texture': 'env_signs/go.png',
+            'position': [2, -0.3, 0.75],
+            'rotation': [0, 1.57, 1.57],
+            'scale': [0.5, 0.5, 0.5],
+            'collision_size': [0.25, 0.05, 0.3]
+        },
+
+        {
+            'name': 'slow_sign_1',
+            'obj': 'env_signs/slow.obj',
+            'texture': 'env_signs/slow.png',
+            'position': [9, -0.3, 0.5],
+            'rotation': [0, 1.57, 1.57],
+            'scale': [0.5, 0.5, 0.5],
+            'collision_size': [0.25, 0.05, 0.3]
+        },
+
+        {
+            'name': 'go_sign_2',
+            'obj': 'env_signs/go.obj',
+            'texture': 'env_signs/go.png',
+            'position': [10.5, -2, 0.75],
+            'rotation': [1.57, 1.57, 1.57],
+            'scale': [0.5, 0.5, 0.5],
+            'collision_size': [0.25, 0.05, 0.3]
+        },
+
+        {
+            'name': 'slow_sign_2',
+            'obj': 'env_signs/slow.obj',
+            'texture': 'env_signs/slow.png',
+            'position': [16, -18, 0.5],
+            'rotation': [1.1, 1.57, 1.57],
+            'scale': [0.5, 0.5, 0.5],
+            'collision_size': [0.25, 0.05, 0.3]
+        },
+
+        {
+            'name': 'go_sign_3',
+            'obj': 'env_signs/go.obj',
+            'texture': 'env_signs/go.png',
+            'position': [14.25, -19.5, 0.75],
+            'rotation': [-2.8, 1.57, 1.57],
+            'scale': [0.5, 0.5, 0.5],
+            'collision_size': [0.25, 0.05, 0.3]
+        },
+
+        {
+            'name': 'slow_sign_3',
+            'obj': 'env_signs/slow.obj',
+            'texture': 'env_signs/slow.png',
+            'position': [1.3, -14.5, 0.5],
+            'rotation': [-2.8, 1.57, 1.57],
+            'scale': [0.5, 0.5, 0.5],
+            'collision_size': [0.25, 0.05, 0.3]
+        },
+
+        {
+            'name': 'go_sign_4',
+            'obj': 'env_signs/go.obj',
+            'texture': 'env_signs/go.png',
+            'position': [1.3, -12.5, 0.75],
+            'rotation': [5.84, 1.57, 1.57],
+            'scale': [0.5, 0.5, 0.5],
+            'collision_size': [0.25, 0.05, 0.3]
+        },
+
+        {
+            'name': 'slow_sign_4',
+            'obj': 'env_signs/slow.obj',
+            'texture': 'env_signs//slow.png',
+            'position': [8.7, -13.4, 0.5],
+            'rotation': [6.5, 1.57, 1.57],
+            'scale': [0.5, 0.5, 0.5],
+            'collision_size': [0.25, 0.05, 0.3]
+        },
+
+        {
+            'name': 'go_sign_5',
+            'obj': 'env_signs/go.obj',
+            'texture': 'env_signs/go.png',
+            'position': [6, -8, 0.75],
+            'rotation': [2.7, 1.57, 1.57],
+            'scale': [0.5, 0.5, 0.5],
+            'collision_size': [0.25, 0.05, 0.3]
+        },
+
+        {
+            'name': 'slow_sign_5',
+            'obj': 'env_signs/slow.obj',
+            'texture': 'env_signs/slow.png',
+            'position': [-6, -6.2, 0.5],
+            'rotation': [3.14, 1.57, 1.57],
+            'scale': [0.5, 0.5, 0.5],
+            'collision_size': [0.25, 0.05, 0.3]
+        },
+
+        {
+            'name': 'go_sign_6',
+            'obj': 'env_signs/go.obj',
+            'texture': 'env_signs/go.png',
+            'position': [-7.2, -4, 0.75],
+            'rotation': [4.71, 1.57, 1.57],
+            'scale': [0.5, 0.5, 0.5],
+            'collision_size': [0.25, 0.05, 0.3]
+        },
+
+        {
+            'name': 'slow_sign_6',
+            'obj': 'env_signs/slow.obj',
+            'texture': 'env_signs/slow.png',
+            'position': [-7.2, -1.2, 0.5],
+            'rotation': [4.71, 1.57, 1.57],
+            'scale': [0.5, 0.5, 0.5],
+            'collision_size': [0.25, 0.05, 0.3]
+        },
+
+        {
+            'name': 'go_sign_7',
+            'obj': 'env_signs/go.obj',
+            'texture': 'env_signs/go.png',
+            'position': [-5, -0.6, 0.75],
+            'rotation': [0, 1.57, 1.57],
+            'scale': [0.5, 0.5, 0.5],
+            'collision_size': [0.25, 0.05, 0.3]
+        },
+    ]
+
+    # Load Signs
+    print(f"Loading {len(signs_config)} signs...")
+
+    for sign_cfg in signs_config:
+        try:
+            # Load texture
+            texture_id = pybullet.loadTexture(sign_cfg['texture'])
+            
+            # Create visual shape
+            visual_shape = pybullet.createVisualShape(
+                shapeType=pybullet.GEOM_MESH,
+                fileName=sign_cfg['obj'],
+                meshScale=sign_cfg['scale'],       # Now using scale from config
+                rgbaColor=[1, 1, 1, 1]
+            )
+            
+            # Create collision shape
+            collision_shape = pybullet.createCollisionShape(
+                shapeType=pybullet.GEOM_BOX,
+                halfExtents=sign_cfg['collision_size']
+            )
+            
+            # Create the sign
+            sign_id = pybullet.createMultiBody(
+                baseMass=0,
+                baseCollisionShapeIndex=collision_shape,
+                baseVisualShapeIndex=visual_shape,
+                basePosition=sign_cfg['position'],
+                baseOrientation=pybullet.getQuaternionFromEuler(sign_cfg['rotation'])
+            )
+            
+            # Apply texture
+            pybullet.changeVisualShape(sign_id, -1, textureUniqueId=texture_id)
+            
+            # Debuggin Purposes
+            print(f"Loaded {sign_cfg['name']} at {sign_cfg['position']}")
+            
+        except Exception as e:
+            print(f"Failed to load {sign_cfg['name']}: {e}")
+
     env = CustomRacecarWrapper(env)
     env = Monitor(env)
 
@@ -502,6 +814,6 @@ if __name__ == "__main__":
         device="cpu"
     )
 
-    model.learn(total_timesteps=200_000)
-    model.save("./models/ppo_racecar_model_pres")
+    model.learn(total_timesteps=300_000)
+    model.save("./models/ppo_racecar_model_detection2")
     env.close()
