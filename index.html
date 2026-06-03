@@ -22,16 +22,6 @@
     gtag('config', 'G-PYVRSFMDRL');
   </script>
 
-  <style>
-    .video-container {
-      display: flex;
-      justify-content: center; /* Centers it horizontally */
-      align-items: center;     /* Centers it vertically (if the container has height) */
-      margin: 20px auto;       /* Adds space above/below and keeps it centered */
-      width: 100%;             /* Ensures the wrapper takes up the full width */
-    }
-  </style>
-
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
         rel="stylesheet">
 
@@ -614,27 +604,33 @@
         Below is a video of the fully integrated system running, and then a video of the car moving around the track without the signs
       </p>
     </div>
-    <div class="video-container">
-      <iframe 
-          width="560" 
-          height="315" 
-          src="https://www.youtube.com/watch?v=B9rXmTC1Zng" 
-          title="YouTube video player" 
-          frameborder="0" 
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-          allowfullscreen>
-      </iframe>
+    <div class="video-column">
+      <div class="video-responsive-wrapper">
+          <iframe 
+              width="560" 
+              height="315" 
+              src="https://www.youtube.com/watch?v=B9rXmTC1Zng" 
+              title="YouTube video player" 
+              frameborder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              referrerpolicy="strict-origin-when-cross-origin" 
+              allowfullscreen>
+          </iframe>
+      </div>
     </div>
-    <div class="video-container">
-      <iframe 
-          width="560" 
-          height="315" 
-          src="https://youtu.be/3f3nvi-IMnk" 
-          title="YouTube video player" 
-          frameborder="0" 
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-          allowfullscreen>
-      </iframe>
+    <div class="video-column">
+      <div class="video-responsive-wrapper">
+          <iframe 
+              width="560" 
+              height="315" 
+              src="https://youtu.be/3f3nvi-IMnk" 
+              title="YouTube video player" 
+              frameborder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              referrerpolicy="strict-origin-when-cross-origin" 
+              allowfullscreen>
+          </iframe>
+      </div>
     </div>
   </div>
 </section>
