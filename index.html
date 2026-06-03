@@ -545,52 +545,51 @@
         <figcaption>TensorBoard logs showing reward and episode length increasing during PPO training</figcaption>
       </figure>
     </div>
-  </div>
-
-  <h3 class="title is-4">YOLO Detection Integration</h3>
-  <div class="content has-text-justified">
-    <p>
-      To implement the sign detection within the PPO driving agent, the observation size was first expanded from 1094 to 1102. 
-      The expanded size allows the model to:
-    </p>
-    <ul class="section-list">
-      <li>Consider the probabilities of the sign being STOP, SLOW, or GO (0-1)</li>
-      <li>The confidence of the detection (0-1)</li>\
-      <li>Bounding box centre X and Y coordinates (0-1)</li>
-      <li>Bounding box width and height (0-1)</li>
-    </ul>
-    <p>
-      The detections were then filtered so only the detection with the highest confidence is used by the model. The above
-      detection features were then extracted and saved to a global detection variable. The detection for the previous step is used
-      influence the reward of each current step. A smalll reward or penalty is given in response to how the target speed changes 
-      upon detection of the GO and SLOW signs. However, a large penalty is applied if the target speed does not drop below 0.1 in 
-      response to the STOP sign; similarly, a large reward is given if it does.
-    </p>
-    <p>
-      Overall, the detections struggle running from the car camera. It is common for a false positive STOP sign to be detected
-      during the lap around the track; additionally, the detection rarely detects the slow sign. These detection issues are likely
-      due to the similarity colour-wise of the signs, combined with the fact that the signs in the enviroment do not match the
-      training set in shape or angle. As seen in the video:
-    </p>
-  </div>
-  <div class="column is-one-third has-text-centered">
-    <video autoplay muted loop playsinline style="max-width: 100%; max-height: 520px; border-radius: 6px;">
-      <source src="./static/videos/PPO_pov.mp4" type="video/mp4">
-    </video>
-    <p style="font-style: italic;">PPO point-of-view lap completion from the car camera with detection window</p>
-  </div>
-  <div class="content has-text-justified">
-    <p>
-      The increased observation size contributes to the difficulty of training, meaning that the training time was increased
-      dramatically compared to the base PPO model. Despite this, the model only converged at a reward of about 0 (seen below) and the model is not
-      able to complete a full lap of the track.
-    </p>
-  </div>
-  <div class="has-text-centered">
-    <figure class="section-figure">
-      <img src="./static/images/PPOtensorBoard.png" alt="PPO TensorBoard training metrics" style="max-width: 100%;"/>
-      <figcaption>TensorBoard logs showing reward and episode length increasing during detection-PPO training</figcaption>
-    </figure>
+    <h3 class="title is-4">YOLO Detection Integration</h3>
+    <div class="content has-text-justified">
+      <p>
+        To implement the sign detection within the PPO driving agent, the observation size was first expanded from 1094 to 1102. 
+        The expanded size allows the model to:
+      </p>
+      <ul class="section-list">
+        <li>Consider the probabilities of the sign being STOP, SLOW, or GO (0-1)</li>
+        <li>The confidence of the detection (0-1)</li>\
+        <li>Bounding box centre X and Y coordinates (0-1)</li>
+        <li>Bounding box width and height (0-1)</li>
+      </ul>
+      <p>
+        The detections were then filtered so only the detection with the highest confidence is used by the model. The above
+        detection features were then extracted and saved to a global detection variable. The detection for the previous step is used
+        influence the reward of each current step. A smalll reward or penalty is given in response to how the target speed changes 
+        upon detection of the GO and SLOW signs. However, a large penalty is applied if the target speed does not drop below 0.1 in 
+        response to the STOP sign; similarly, a large reward is given if it does.
+      </p>
+      <p>
+        Overall, the detections struggle running from the car camera. It is common for a false positive STOP sign to be detected
+        during the lap around the track; additionally, the detection rarely detects the slow sign. These detection issues are likely
+        due to the similarity colour-wise of the signs, combined with the fact that the signs in the enviroment do not match the
+        training set in shape or angle. As seen in the video:
+      </p>
+    </div>
+    <div class="column is-one-third has-text-centered">
+      <video autoplay muted loop playsinline style="max-width: 100%; max-height: 520px; border-radius: 6px;">
+        <source src="./static/videos/PPO_pov.mp4" type="video/mp4">
+      </video>
+      <p style="font-style: italic;">PPO point-of-view lap completion from the car camera with detection window</p>
+    </div>
+    <div class="content has-text-justified">
+      <p>
+        The increased observation size contributes to the difficulty of training, meaning that the training time was increased
+        dramatically compared to the base PPO model. Despite this, the model only converged at a reward of about 0 (seen below) and the model is not
+        able to complete a full lap of the track.
+      </p>
+    </div>
+    <div class="has-text-centered">
+      <figure class="section-figure">
+        <img src="./static/images/PPOtensorBoard.png" alt="PPO TensorBoard training metrics" style="max-width: 100%;"/>
+        <figcaption>TensorBoard logs showing reward and episode length increasing during detection-PPO training</figcaption>
+      </figure>
+    </div>
   </div>
 </section>
 
