@@ -188,6 +188,68 @@
   </div>
 </section>
 
+<section id="portfolio-wrapper-section">
+  <div class="container is-max-desktop">
+    <h2>Environment Interfacing & Data Pipeline</h2>
+      <div class="content has-text-justified">
+
+        <h3>1. The Problem: Structural Mismatches in Reinforcement Learning</h3>
+        <p>When building Reinforcement Learning (RL) pipelines, a massive structural gap often exists between the <span class="highlight">raw output of a physics simulator</span> and the 
+          <span class="highlight">input expectations of mathematical RL algorithms</span> like Proximal Policy Optimization (PPO).</p>
+        
+        <p>In this project, using the raw <code>racecar_gym</code> environment presented three distinct architectural roadblocks:</p>
+        <ul>
+            <li><span class="highlight">Complex Data Structures:</span> The raw simulator outputs a highly nested dictionary containing non-uniform data types (a 1080-point LiDAR array, spatial 
+              poses, linear velocities, and accelerometer telemetry). Off-the-shelf PPO implementations require either a uniform 1D vector or a standard image tensor.</li>
+            <li><span class="highlight">Leaky Environment Logic:</span> Default simulation rewards rarely align with specialized behavioral goals. Modifying the simulator's source code directly 
+              to inject task-specific rewards breaks modularity and ruins reproducibility.</li>
+            <li><span class="highlight">Tight Coupling:</span> Forcing an environment to output data tailored to one specific model architecture prevents developers from easily swapping out different 
+              tracking frameworks, maps, or model baselines.</li>
+        </ul>
+
+        <h3>2. The Solution: The Wrapper Design Pattern</h3>
+        <p>To maintain clean, modular, and reusable code, this pipeline leverages the <span class="highlight">Decorator/Wrapper architectural pattern</span> natively supported by the Gymnasium API.</p>
+        <p>Instead of hacking the core simulator physics, the environment is encapsulated inside a custom middleware layer. This proxy architecture intercepts, modifies, and reformats data moving between 
+          the agent and the simulation engine in real-time.</p>
+
+        <p>This wrapper design choice provided two crucial software engineering benefits:</p>
+        <ul>
+            <li><span class="highlight">Separation of Concerns:</span> The simulator remains strictly responsible for rigid-body physics, the wrapper handles feature engineering and reward shaping, and 
+              the agent focuses entirely on policy optimization.</li>
+            <li><span class="highlight">Component Reusability:</span> The underlying physics engine can be reused identically for Deep Q-Networks (DQN), multi-agent configurations, or standard PPO 
+              models simply by hot-swapping different wrapper classes.</li>
+        </ul>
+
+        <h3>3. Deep Dive: The Custom Racecar Wrapper Implementation</h3>
+        <p>The core software component developed for this pipeline is the <code>CustomRacecarWrapper</code>. It actively manages two critical operational phases of the RL loop: <strong>Observation 
+          Vectorization</strong> and <strong>Algorithmic Reward Shaping</strong>.</p>
+
+        <h4>A. Observation Vectorization & Feature Engineering</h4>
+        <p>The raw environment provides a multi-tier dictionary space. The custom wrapper intercepts this structure during every <code>reset()</code> and <code>step()</code> execution to process it:</p>
+        <ul>
+            <li><strong>Feature Isolation:</strong> It extracts high-dimensional LiDAR data array <code>(1080,)</code>, spatial coordinates/orientation vectors <code>(6,)</code>, and linear/angular 
+              velocity data <code>(6,)</code> while stripping away unused metadata like simulation runtime steps.</li>
+            <li><strong>Concatenation:</strong> It flattens and merges these arrays into a continuous, single 1D vector of size <code>(1092,)</code>.</li>
+            <li><strong>Space Redefinition:</strong> It programmatically overrides the environment's <code>observation_space</code> property with a new <code>gym.spaces.Box</code> structure, 
+              satisfying Stable-Baselines3 integrity checks perfectly before training kicks off.</li>
+        </ul>
+
+        <h4>B. Algorithmic Reward Shaping</h4>
+        <p>Because PPO relies heavily on stable, continuous reward signals to converge, the wrapper overwrites the environment's default step values with a tailored incentive structure:</p>
+        <ul>
+            <li><strong>Progress Maximization:</strong> The wrapper calculates the magnitude of the car's directional velocity vector, actively rewarding the agent for maximizing forward speed along the track.</li>
+            <li><strong>Termination Penalty:</strong> The wrapper intercepts the environment's <code>terminated</code> state and <code>info</code> packet. If a collision is flagged by the PyBullet engine, 
+              a massive negative penalty (e.g., <code>-100.0</code>) is injected, forcing the policy to heavily prioritize crash avoidance.</li>
+        </ul>
+
+        <blockquote>
+            <strong>Architectural Impact:</strong> By utilizing Gymnasium wrappers, the training pipeline treats the complex simulation engine entirely as a black box. This abstraction layer reduced 
+          state complexity via sensor isolation, aligned agent incentives through custom reward feedback, and permitted seamless integration with enterprise-grade RL frameworks.
+        </blockquote>
+      </div>
+      </div>
+    </section>
+
 <section class="section">
   <div class="container is-max-desktop">
     <h2 class="title is-3">YOLO</h2>
