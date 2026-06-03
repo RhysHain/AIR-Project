@@ -82,3 +82,6 @@ steering_multiplier: 1.0
 ```
 
 This increases the usable steering range for tight hairpin turns. If the car is not turning sharply enough, check that this value has not been reset to `0.5`.
+
+#### Detection in PPO
+To view detection incoporation, swap to 'detection' branch.
