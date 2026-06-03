@@ -20,8 +20,9 @@
 - Tested and evalutated PPO for car movement
 
 **Alexander Seretis** - *System Integration*
-- Integrated visual indicators into the observation function
-- Trained agent on full system implememntation
+- Expanded observation function to include sign classification via custom detection array
+- Added sign classification visual to test rendering
+- Trained driving agent with sign detection
 
 ## Project Overview
 This project implements a car (agent) in a simulated race track (Racecar Gym) that combines computer vision and reinforcement learning for autonomous driving around the track
