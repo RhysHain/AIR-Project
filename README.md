@@ -22,6 +22,7 @@
 **Alexander Seretis** - *System Integration*
 - Expanded observation function to include sign classification via custom detection array
 - Added sign classification visual to test rendering
+- Assisted adding signs to environment
 - Trained driving agent with sign detection
 
 ## Project Overview
