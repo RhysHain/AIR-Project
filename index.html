@@ -22,6 +22,16 @@
     gtag('config', 'G-PYVRSFMDRL');
   </script>
 
+  <style>
+    .video-container {
+      display: flex;
+      justify-content: center; /* Centers it horizontally */
+      align-items: center;     /* Centers it vertically (if the container has height) */
+      margin: 20px auto;       /* Adds space above/below and keeps it centered */
+      width: 100%;             /* Ensures the wrapper takes up the full width */
+    }
+  </style>
+
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
         rel="stylesheet">
 
@@ -70,7 +80,7 @@
             <div class="publication-links">
               <!-- Video Link. -->
               <span class="link-block">
-                <a href="https://www.youtube.com/watch?v=MrKrnHhk8IA"
+                <a href="https://youtu.be/B9rXmTC1Zng"
                    class="external-link button is-normal is-rounded is-dark">
                   <span class="icon">
                       <i class="fab fa-youtube"></i>
@@ -589,6 +599,22 @@
         <img src="./static/images/detection_tensor.png" alt="PPO with detection TensorBoard training metrics" style="max-width: 100%;"/>
         <figcaption>TensorBoard logs showing reward and episode length increasing during detection-PPO training</figcaption>
       </figure>
+    </div>
+    <div class="content has-text-justified">
+      <p>
+        Below is a video of the fully integrated system running
+      </p>
+    </div>
+    <div class="video-container">
+      <iframe 
+          width="560" 
+          height="315" 
+          src="https://youtu.be/B9rXmTC1Zng" 
+          title="YouTube video player" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+          allowfullscreen>
+      </iframe>
     </div>
   </div>
 </section>
