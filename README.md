@@ -3,20 +3,25 @@
 ## Group Information
 **Group Number:** 5
 
+**Rhys Hain** - *Simulation, Documentation and Organisation*
+- Set up and tested simulation environment
+- Created and managed GitHub repository, as well as code set up
+- Managed portfolio, video and presentation development
+
 **Huu Thanh Jack Nguyen** - *YOLO training & Environment Design*
 - Designed custom sign models (STOP, SLOW, GO) in Blender
 - Created labeled dataset from custom models
 - Trained YOLOv8 detection model
 - Added sign models into simulation environment
 
-**Mateusz Kopaczynski** - *ROLE/CONTRIBUTION*
+**Mateusz Kopaczynski** - *PPO Algorithm*
+- Developed the observation function
+- Determined parameters and calculations involved in the reward function
+- Tested and evalutated PPO for car movement
 
-**Alexander Seretis** - *ROLE/CONTRIBUTION*
-
-**Rhys Hain** - *Simulation, Documentation and Organisation*
-- Set up and tested simulation environment
-- Created and managed GitHub repository, as well as code set up
-- Managed portfolio, video and presentation development
+**Alexander Seretis** - *System Integration*
+- Integrated visual indicators into the observation function
+- Trained agent on full system implememntation
 
 ## Project Overview
 This project implements a car (agent) in a simulated race track (Racecar Gym) that combines computer vision and reinforcement learning for autonomous driving around the track
